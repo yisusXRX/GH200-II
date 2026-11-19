@@ -1,0 +1,26 @@
+name: "Procesar datos con Python"
+description: "Ejecuta un script en Python, genera un reporte y devuelve un output"
+
+inputs:
+  entorno:
+    description: "Entorno de ejecución"
+    required: false
+    default: "staging"
+
+outputs:
+  resumen:
+    description: "Resumen generado por el script de Python"
+    value: ${{ steps.ejecutar-py.outputs.resumen }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Configurar Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.12"
+
+    - name: Ejecutar script de Python
+      id: ejecutar-py
+      shell: bash
+      run: python3 ${{ github.action_path }}/procesar.py "${{ inputs.entorno }}"
