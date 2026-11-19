@@ -1,0 +1,45 @@
+name: Demo con Acción de Python
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  ejecutar-accion-python:
+    runs-on: ubuntu-latest
+    outputs:
+      resumen-python: ${{ steps.accion-py.outputs.resumen }}
+
+    steps:
+      - name: Descargar repositorio
+        uses: actions/checkout@v4
+
+      - name: Ejecutar acción personalizada en Python
+        id: accion-py
+        uses: ./.github/actions/procesar-datos
+        with:
+          entorno: "produccion"
+
+      - name: Subir reporte como artefacto
+        uses: actions/upload-artifact@v4
+        with:
+          name: reporte-python
+          path: reporte/
+
+  verificar-resultado:
+    needs: ejecutar-accion-python
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Mostrar output recibido desde Python
+        run: echo "Output de la acción Python: ${{ needs.ejecutar-accion-python.outputs.resumen-python }}"
+
+      - name: Descargar artefacto generado
+        uses: actions/download-artifact@v4
+        with:
+          name: reporte-python
+          path: reporte-descargado/
+
+      - name: Leer archivo del artefacto
+        run: cat reporte-descargado/resumen.txt
